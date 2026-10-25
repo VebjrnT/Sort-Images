@@ -3,7 +3,7 @@ import shutil
 import pathlib
 
 from PIL import Image
-from PIL.ExifTags import TAGS
+#from PIL.ExifTags import TAGS
 from typing import Any
 
 
@@ -13,20 +13,20 @@ movies_suffixes = [".MOV", ".mov"]
 
 # -------- Functions / Methods -------------
 
-def make_filename_from_datetime(date_time : Any, original_filename : str, suffix : str)-> Any:
+def make_filename_from_datetime(date_time : Any, original_filename : str, suffix : str)-> tuple[Any, bool]:
     """
     Args:
         date_time (str) : 
         suffix : .JPG, etc, have to figure out this
     """
     if date_time == None:
-        return original_filename
+        return original_filename, False
 
     date_time_rep1 = date_time.replace(":", "_")
     date_time_rep2 = date_time_rep1.replace(" ", "_")
     date_time_fname = f"{date_time_rep2}{suffix}"
     
-    return date_time_fname
+    return date_time_fname, True
 
 def get_suffix(input_string : str):
 
@@ -88,11 +88,44 @@ def get_all_subdirectories_with_files(path : str, all_paths : list[str], ignore_
 
 
 def check_if_filename_exist(path : str, fname : str)-> bool:
-    return False
+    existing_fnames = get_fnames_from_path(path)
+    return (fname in existing_fnames)
+
+def move_file(original_fpath : str, new_fpath : str):
+    #check_if_filename_exist(original_fpath, new_fpath)
+    shutil.move(original_fpath, new_fpath)
 
 
-def move_file(orignal_fpath : str, new_fpath : str):
-    print("To be Written")
+def initial_fname_update(new_file_name, suffix):
+    updated_fname = f"{new_file_name.strip(suffix)}_1{suffix}"
+    return updated_fname
+
+
+
+def make_duplicate_fname(new_file_name, suffix, num_duplicates):
+    updated_fname = f"{new_file_name.strip(suffix)}_{num_duplicates}{suffix}"
+    return updated_fname
+#                   "Pictures_With_Dates",
+def most_of_the_logic(folder_to_check, new_file_name, current_fpath, current_suffix):
+    if check_if_filename_exist("Pictures_Potential_Duplicates", new_file_name):
+        criteria = True
+        num_duplicates = 1
+        fnames_potential_duplicates = os.listdir("Pictures_Potential_Duplicates")
+        while(criteria):
+            new_dupicate_fname = make_duplicate_fname(new_file_name, current_suffix, num_duplicates)
+            if new_dupicate_fname in fnames_potential_duplicates:
+                num_duplicates += 1
+            else:
+                criteria = False
+        new_dupicate_fname = make_duplicate_fname(new_file_name, current_suffix, num_duplicates)
+        move_file(current_fpath, os.path.join("Pictures_Potential_Duplicates",new_dupicate_fname))
+
+    elif check_if_filename_exist(folder_to_check, new_file_name):
+        move_file(os.path.join(folder_to_check, new_file_name), os.path.join("Pictures_Potential_Duplicates", new_file_name))
+        file_name_init_duplicate = initial_fname_update(new_file_name, current_suffix)
+        move_file(current_fpath, os.path.join("Pictures_Potential_Duplicates", file_name_init_duplicate))
+    else:
+        move_file(current_fpath, os.path.join(folder_to_check, new_file_name))
 
 
 if __name__ == '__main__':
@@ -109,36 +142,32 @@ if __name__ == '__main__':
     # Create the directories
     for directory in dirs_to_make:
         os.makedirs(directory, exist_ok=True)
-
     # Init all paths
     all_paths = []
-
-
+    
     working_dir = os.getcwd()
-
     get_all_subdirectories_with_files(working_dir, all_paths, dirs_to_ignore)
+    
+    total_paths = len(all_paths)
 
-    count = 0
-
-    for current_path in all_paths:
+    for i, current_path in enumerate(all_paths):
         current_fnames =  get_fnames_from_path(current_path)
         for fname in current_fnames:
             current_suffix = get_suffix(fname)
             if current_suffix in images_suffixes:
                 current_fpath = os.path.join(current_path,fname)
                 current_date_time = get_datetime_from_imagepath(current_fpath,  current_suffix)
-                new_file_name = make_filename_from_datetime(current_date_time, fname, current_suffix)
+                new_file_name, date_available  = make_filename_from_datetime(current_date_time, fname, current_suffix)
+
+                if date_available:
+                    most_of_the_logic("Pictures_With_Dates",new_file_name, current_fpath, current_suffix)
+                else:
+                    most_of_the_logic("Pictures_Without_Date",new_file_name, current_fpath, current_suffix)
                 print(f"New filename is:\t {new_file_name}")
 
             else:
                 print(f"Suffix NOT okay:\t {current_suffix}")
-        
         # Test block in order to not run forever
-        if count > 10:
-            break
-        
-        count += 1
-
-
-
-    
+        #if i > 10:
+        #    break
+        print(f"Directory {i} of {total_paths} DONE")
