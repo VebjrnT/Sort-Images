@@ -1,0 +1,8 @@
+Desktop/
+Library/
+Pictures/
+Pictures_Potential_Duplicates/
+Pictures_With_Dates/
+Pictures_Without_Date/
+.venv/
+.ipynb_checkpoints/
