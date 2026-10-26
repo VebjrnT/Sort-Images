@@ -3,7 +3,6 @@ import shutil
 import pathlib
 
 from PIL import Image
-#from PIL.ExifTags import TAGS
 from typing import Any
 
 
@@ -105,6 +104,7 @@ def initial_fname_update(new_file_name, suffix):
 def make_duplicate_fname(new_file_name, suffix, num_duplicates):
     updated_fname = f"{new_file_name.strip(suffix)}_{num_duplicates}{suffix}"
     return updated_fname
+
 #                   "Pictures_With_Dates",
 def most_of_the_logic(folder_to_check, new_file_name, current_fpath, current_suffix):
     if check_if_filename_exist("Pictures_Potential_Duplicates", new_file_name):

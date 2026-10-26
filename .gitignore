@@ -6,3 +6,4 @@ Pictures_With_Dates/
 Pictures_Without_Date/
 .venv/
 .ipynb_checkpoints/
+__pycache__/
