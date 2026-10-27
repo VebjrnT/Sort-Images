@@ -7,3 +7,6 @@ Pictures_Without_Date/
 .venv/
 .ipynb_checkpoints/
 __pycache__/
+Videos_Potential_Duplicates/
+Videos_With_Dates/
+Videos_Without_Date/
